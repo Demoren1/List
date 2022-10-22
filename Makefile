@@ -18,20 +18,20 @@ CFLAGS= -save-temps -Wall -Wextra -fsanitize=address -g #-D _DEBUG -ggdb3 -std=c
 -pie -Wlarger-than=8192 -Wstack-usage=8192
 
 ##include paths
-INCLUDE_PATH = 
+INCLUDE_PATH = -I./include/
 
 #sources
-LIST_SRC := $(SRC_DIR)list.cpp
+LIST_SRC := $(SRC_DIR)list.cpp $(SRC_DIR)list_func.cpp $(SRC_DIR)list_dump.cpp
 LIST_OBJ := $(patsubst $(SRC_DIR)%.cpp, $(OBJ_DIR)%.o, $(LIST_SRC)) 
 
 #exe
 LIST_EXE := list
 
 $(LIST_EXE) : $(LIST_OBJ) 
-	$(CC) $(CFLAGS) $(LIST_OBJ) -o $(LIST_EXE)
+	$(CC) $(CFLAGS) $(INCLUDE_PATH) $(LIST_OBJ) -o $(LIST_EXE)
 
 $(OBJ_DIR)%.o : $(SRC_DIR)%.cpp 
-	$(CC) -c $< -o $@
+	$(CC) $(INCLUDE_PATH) -c $< -o $@
 
 mkdir :
 	@mkdir $(OBJ_DIR) -p

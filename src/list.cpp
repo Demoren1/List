@@ -4,18 +4,18 @@
 
 int main()
 {
-    open_list_logs();
+    CHECK_FUNC(open_list_logs());
 
     puts("hello world"); 
     List_t list = {};
-    LIST_CTOR(list, NUM_OF_ELEMENTS);
-
+    LIST_CTOR(list, 10);
+    
     DUMP_LIST(&list);
     
-    printf("%d\n", list_add(&list, 3, 228));
-
+    list_del(&list, 1);
     DUMP_LIST(&list);
-
-    close_list_logs();
+    
+    list_detor(&list);
+    CHECK_FUNC(close_list_logs());
     return 0;
 }

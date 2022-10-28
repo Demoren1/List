@@ -1,6 +1,6 @@
 #include <stdio.h>
-#include <debug.h>
 #include <assert.h>
+#include <list_debug.h>
 #include <list_func.h>
 
 static FILE *list_logs = 0;
@@ -25,7 +25,7 @@ int close_list_logs()
     return 0;
 }
 
-int dump_list(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
+int list_dump(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
 {   
     fprintf(list_logs, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
 
@@ -103,14 +103,61 @@ int dump_list(List_t *list, const char* name_file, const char* name_function, co
     return 0;
 }
 
-int write_error_in_dump(int code, const char* name_file, const char* name_function, const char* name_variable, int num_line)
-{   
-    for (int i = 1; i < QUANTITY_OF_ERRORS; i = i << 1)
-    {   
-        if((code & i) != 0)
-            PRINT_IN_LOG(code);
-    }
+int error_decoder(int code)
+{
+    LIST_PRINT_ERROR(code, LIST_ERROR_LIST_FUNC_END_WITH_ERROR);
 
+    LIST_PRINT_ERROR(code, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_CAPACITY_TOO_BIG);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_DEL_FROM_POISON_INDEX);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_JUMP_ON_POISON);
+
+    fflush(LIST_LOG_FILE);
 
     return 0;
 }
+
+size_t list_check(List_t *list)
+{   
+    if (LIST_LOG_FILE == 0)
+    {
+        return -1;
+    }
+    
+    if (list == 0)
+    {   
+        fprintf(LIST_LOG_FILE, "ERROR: list destroyed");
+        return -1;
+    }
+
+    list->code_of_error |= CHECK(list->capacity > MAX_CAPACITY, LIST_ERROR_CAPACITY_TOO_BIG);
+
+    return list->code_of_error;
+
+}   
+
+int list_graph_dump(List_t *list)
+{
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

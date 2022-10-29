@@ -41,7 +41,12 @@
 
 #define CHECK(condition, code_of_error)  (condition) ? code_of_error : 0;
 
-#define LIST_PRINT_ERROR(testing_var, code_of_error) (testing_var & code_of_error) ? fprintf(LIST_LOG_FILE, "%s\n", #code_of_error) : 0;
+#define LIST_PRINT_ERROR(testing_var, code_of_error) if (testing_var & code_of_error)                           \
+                                                    {                                                           \
+                                                        fprintf(LIST_LOG_FILE, "%s\n", #code_of_error);         \
+                                                        fprintf(graph_log_for_browser, "%s\n", #code_of_error); \
+                                                    }                                                           \
+                                                    else  0;
 
 const long long QUANTITY_OF_ERRORS = pow(2, 16);
 
@@ -59,5 +64,6 @@ enum List_errors
     LIST_ERROR_DEL_FROM_POISON_INDEX            = 1 << 3,
     LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY     = 1 << 4,
     LIST_ERROR_PTR_ON_LIST_NULL                 = 1 << 5,
-    LIST_ERROR_JUMP_ON_POISON                   = 1 << 6
+    LIST_ERROR_JUMP_ON_POISON                   = 1 << 6,
+    LIST_ERROR_WRONG_REALLOC_IN_RESIZE          = 1 << 7
 };

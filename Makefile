@@ -33,13 +33,13 @@ STACK_OBJ := $(patsubst $(SRC_STACK_DIR)%.cpp, $(OBJ_DIR)%.o, $(STACK_SRC))
 LIST_EXE := list
 
 $(LIST_EXE) : $(LIST_OBJ) $(STACK_OBJ)
-	$(CC) $(CFLAGS) $(INCLUDE_PATH) $(LIST_OBJ) $(STACK_OBJ) -o $(LIST_EXE)
+	@$(CC) $(CFLAGS) $(INCLUDE_PATH) $(LIST_OBJ) $(STACK_OBJ) -o $(LIST_EXE)
 
 $(OBJ_DIR)%.o : $(SRC_LIST_DIR)%.cpp 
-	$(CC) $(INCLUDE_PATH) -c $< -o $@
+	@$(CC) $(INCLUDE_PATH) -c $< -o $@
 
 $(OBJ_DIR)%.o : $(SRC_STACK_DIR)%.cpp
-	$(CC) $(INCLUDE_PATH) -c $< -o $@
+	@$(CC) $(INCLUDE_PATH) -c $< -o $@
 
 mkdir :
 	@mkdir $(OBJ_DIR) -p

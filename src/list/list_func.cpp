@@ -61,7 +61,7 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
         return -1;
     }
     
-    if (list->size + 1 == list->capacity)
+    if (list->size == list->capacity)
     {
         list_resize(list, list->capacity * 2);
     }
@@ -114,6 +114,7 @@ static int find_head_and_tail(List_t *list)
 
 int list_detor(List_t *list)
 {
+    list_fill_poison(list, 0, list->capacity);
     free(list->elements);
     stack_dtor(&list->free);
     return 0;
@@ -121,9 +122,12 @@ int list_detor(List_t *list)
 
 int list_resize(List_t *list, size_t new_capacity)
 {   
-    assert(list->capacity < MAX_CAPACITY);
+    CHECK_ON_ERROR(list->capacity > MAX_CAPACITY, LIST_ERROR_CAPACITY_TOO_BIG);
 
     list->elements = (Elements_t *) realloc(list->elements, new_capacity * sizeof(Elements_t));
+
+    CHECK_ON_ERROR(list->elements == NULL, LIST_ERROR_WRONG_REALLOC_IN_RESIZE);
+
     list_fill_poison(list, list->capacity, new_capacity);
     list->capacity = new_capacity;
 
@@ -155,7 +159,7 @@ int list_del(List_t *list, int index)
     list->elements[list->elements[index].next].prev = tmp_prev;
 
     list_fill_poison(list, index, index + 1);
-
+    list->size--;
     find_head_and_tail(list);
     return 0;
 }
@@ -198,12 +202,8 @@ int list_sort(List_t *list)
 {
     Elements_t *sorted_elements = (Elements_t*)calloc(list->capacity, sizeof(Elements_t));
 
-    sorted_elements[0].next = 0;
-    sorted_elements[0].prev = 0;
-    sorted_elements[0].value = 0;
-
-
     int jumper = list->head;
+
     int counter = 1;
     while(jumper !=0)
     {   
@@ -215,20 +215,31 @@ int list_sort(List_t *list)
         counter++;
     }
 
+    sorted_elements[0].next  = 1;
+    sorted_elements[0].prev  = counter - 1;
+    sorted_elements[0].value = 0; 
+
     free(list->elements);
+    clean_free_stack(&list->free);
+    
     list->elements = sorted_elements;
     
     list_fill_poison(list, counter, list->capacity);
 
-    list->head = 1;
-    list->tail = counter - 1;
+    find_head_and_tail(list);
 
     list->elements[list->tail].next = 0;
 
     return 0;
 }
 
-
-
-
-
+int clean_free_stack(Stack *stk)
+{
+    elem tmp = 0;
+    while (stk->size > 0)
+    {
+        stack_pop(stk, &tmp);
+    }
+    
+    return 0;
+}

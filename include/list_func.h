@@ -5,7 +5,8 @@
 
 #define LIST_CTOR(list, capacity) list_ctor(&list, capacity, FUNC_GENERAL_INFO(list))
 
-#define DUMP_LIST(list) list_dump(list, FUNC_GENERAL_INFO(list))
+#define DUMP_LIST(list) list_dump(list, FUNC_GENERAL_INFO(list));                   \
+                        list_graph_dump(list);
 
 #define POISON -1
 
@@ -69,3 +70,5 @@ int list_sort(List_t *list);
 size_t list_check(List_t *list);
 
 int list_graph_dump(List_t *list);
+
+int clean_free_stack(Stack *stk);

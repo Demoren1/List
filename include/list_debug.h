@@ -1,7 +1,7 @@
 #include <unistd.h>
 #include <math.h>
 
-#define MAX_CAPACITY 4096
+#define MAX_CAPACITY 65536
 
 #define LIST_END_DUMP() fputs("-----------------------------------------------------------------------------------------------------------------------\n\n", LIST_LOG_FILE);
 
@@ -65,5 +65,9 @@ enum List_errors
     LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY     = 1 << 4,
     LIST_ERROR_PTR_ON_LIST_NULL                 = 1 << 5,
     LIST_ERROR_JUMP_ON_POISON                   = 1 << 6,
-    LIST_ERROR_WRONG_REALLOC_IN_RESIZE          = 1 << 7
+    LIST_ERROR_WRONG_REALLOC_IN_RESIZE          = 1 << 7,
+    LIST_ERROR_CANT_REALLOC                     = 1 << 8,
+    LIST_ERROR_CANT_CALLOC_FOR_SORT             = 1 << 9,
+    LIST_ERROR_PREV_NOT_EQ_NEXT                 = 1 << 10,
+    LIST_ERROR_CAPACITY_TOO_FEW                 = 1 << 11,
 };

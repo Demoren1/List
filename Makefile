@@ -1,6 +1,5 @@
 all : mkdir list
 SRC_LIST_DIR = ./src/list/
-SRC_STACK_DIR = ./src/stack/src/
 OBJ_DIR = ./obj/
 CC = g++
 
@@ -19,15 +18,13 @@ CFLAGS= -save-temps -Wall -Wextra -fsanitize=address -g -O0#-D _DEBUG -ggdb3 -st
 -pie -Wlarger-than=8192 -Wstack-usage=8192
 
 ##include paths
-INCLUDE_PATH = -I./include/ -I./src/stack/include
+INCLUDE_PATH = -I./include/ 
 
 #sources
 LIST_SRC := $(SRC_LIST_DIR)list.cpp $(SRC_LIST_DIR)list_func.cpp $(SRC_LIST_DIR)list_dump.cpp 
-STACK_SRC := $(SRC_STACK_DIR)debug_funcs.cpp $(SRC_STACK_DIR)input_output.cpp $(SRC_STACK_DIR)stack_func.cpp 
 
 #obj
 LIST_OBJ  := $(patsubst $(SRC_LIST_DIR)%.cpp, $(OBJ_DIR)%.o, $(LIST_SRC)) 
-STACK_OBJ := $(patsubst $(SRC_STACK_DIR)%.cpp, $(OBJ_DIR)%.o, $(STACK_SRC))
 
 #exe
 LIST_EXE := list
@@ -38,8 +35,6 @@ $(LIST_EXE) : $(LIST_OBJ) $(STACK_OBJ)
 $(OBJ_DIR)%.o : $(SRC_LIST_DIR)%.cpp 
 	@$(CC) $(INCLUDE_PATH) -c $< -o $@
 
-$(OBJ_DIR)%.o : $(SRC_STACK_DIR)%.cpp
-	@$(CC) $(INCLUDE_PATH) -c $< -o $@
 
 mkdir :
 	@mkdir $(OBJ_DIR) -p

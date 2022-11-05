@@ -42,15 +42,17 @@ int close_list_logs()
 
 int list_dump(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
 {   
+    
     fprintf(list_logs, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
     fprintf(graph_log_for_browser, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
 
-
+    
     fprintf(list_logs,  "size     = %zd\n"\
-                        "capacity = %zd\n", list->size, list->capacity);
-                        
+                        "capacity = %zd\n", list->size, list->capacity);            //todo use defines
+                    
     fprintf(graph_log_for_browser,  "size     = %zd\n"\
                         "capacity = %zd\n", list->size, list->capacity);
+                    
                         
     fprintf(list_logs, "            ");
     for(int i = 0; i < list->capacity; i++)
@@ -71,18 +73,21 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
         }
     }
 
+                    
     
     fprintf(list_logs, "\nINDEXES: ");
     for(int i = 0; i < list->capacity; i++)
     {
         fprintf(list_logs, "|%3d|   ", i);
     }
+                    
 
     fprintf(list_logs, "\n\nVALUE:   ");
     for(int i = 0; i < list->capacity; i++)
     {
         fprintf(list_logs, "|%3d|   ", list->elements[i].value);
     }
+                    
 
     fprintf(list_logs, "\n\nNEXT:    ");
     for(int i = 0; i < list->capacity; i++)
@@ -90,6 +95,7 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
         fprintf(list_logs, "|%3d|   ", list->elements[i].next);
     }
 
+                    
     
 
     fprintf(list_logs, "\n\nPREV:    ");
@@ -97,6 +103,7 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
     {
         fprintf(list_logs, "|%3d|   ", list->elements[i].prev);
     }
+                    
     
     fprintf(list_logs, "\n");
     for(int i = 0; i < list->capacity; i++)
@@ -104,6 +111,7 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
         fprintf(list_logs, "_________");
     }
 
+                    
     
 
     fprintf(list_logs, "\nHow we see:\t");
@@ -113,6 +121,7 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
     {
         fprintf(list_logs, "%d\t", list->elements[i].value);
         i = list->elements[i].next;
+        
     }
     fprintf(list_logs, "%d", list->elements[i].value);
 
@@ -137,9 +146,19 @@ int error_decoder(int code)
 
     LIST_PRINT_ERROR(code, LIST_ERROR_JUMP_ON_POISON);
 
+    LIST_PRINT_ERROR(code, LIST_ERROR_WRONG_REALLOC_IN_RESIZE);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_CANT_REALLOC);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_CANT_CALLOC_FOR_SORT);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_PREV_NOT_EQ_NEXT);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_CAPACITY_TOO_FEW);
+
     fflush(LIST_LOG_FILE);
 
-    return 0;
+    return code;
 }
 
 size_t list_check(List_t *list)
@@ -168,6 +187,7 @@ int list_graph_dump(List_t *list)
     fputs("rankdir = LR;\n", graph_log);
     fputs("bgcolor = grey;\n", graph_log);
 
+    fputs("graph [splines=polyline];\n", graph_log);
     fputs("node [shape = \"plaintext\", style = \"solid\"];\n", graph_log);
     for (int i = 0; i < list->capacity; i++)
     {
@@ -178,7 +198,7 @@ int list_graph_dump(List_t *list)
                         
                         "    <tr><td bgcolor=\"yellow\" port = \"I%d\">I = %d</td></tr>\n"
                         
-                        "    <tr><td bgcolor=\"lightblue\"><font color=\"#0000ff\">VALUE = %d</font></td></tr>\n"
+                        "    <tr><td bgcolor=\"lightblue\"><font color=\"#0000ff\">V = %d</font></td></tr>\n"
                         
                         "    <tr>\n"
                         "    <td>\n"
@@ -187,9 +207,9 @@ int list_graph_dump(List_t *list)
                         
                         "        <tr>\n"
                         
-                        "            <td bgcolor=\"#70de9f\">PREV = %d</td> \n"
+                        "            <td bgcolor=\"#70de9f\">P = %d</td> \n"
                         
-                        "            <td bgcolor = \"#c8A2c8\" port = \"N%d\"> NEXT =  %d </td>\n"
+                        "            <td bgcolor = \"#c8A2c8\" port = \"N%d\"> N =  %d </td>\n"
                         
                         "        </tr> \n"
                         
@@ -213,7 +233,7 @@ int list_graph_dump(List_t *list)
 
 
 
-    fputs("edge [weight = \"1\", color = \"#3f0063\"];\n", graph_log);
+    fputs("edge [weight = \"1\", color = \"#3f0063\", splines = ortho];\n", graph_log);
     for (int jumper = list->head; ; jumper = list->elements[jumper].next)
     {
         fprintf(graph_log, "node%d:N%d -> node%d:I%d  ", jumper, jumper, list->elements[jumper].next, list->elements[jumper].next);
@@ -222,22 +242,27 @@ int list_graph_dump(List_t *list)
         {
             break;
         }
-          
     }
     fprintf(graph_log, ";\n");
 
     fputs("edge [weight = \"1\", color = blue];\n", graph_log);
 
-    for (int  i = 0; i < list->free.size - 1; i++)
+    for (int  i = list->free_head; ; i = list->elements[i].next)
     {
-        fprintf(graph_log, "node%d-> node%d  ", (int) list->free.data[i+1], (int) list->free.data[i]);          
-
-        if (i == list->free.size - 2)
+        if (i == list->free_head)
         {
             fprintf(graph_log, "free [shape = \"circle\", style = \" filled\", filcolor = \"blue\"]; \n");
-            fprintf(graph_log, "free -> node%d  ", (int)list->free.data[i + 1]);
+            fprintf(graph_log, "free -> node%d  ", i);
         }
+
+        if (i == list->free_tail)
+            break;
+        
+        fprintf(graph_log, "node%d -> node%d  ", i, list->elements[i].next);
+
+        // printf("i = %d, free tail = %d\n", i, list->free_tail);
     }
+
     fprintf(graph_log, ";\n");
 
     fputs("\n}", graph_log);

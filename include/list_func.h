@@ -4,17 +4,48 @@
 
 #define LIST_CTOR(list, capacity) list_ctor(&list, capacity, FUNC_GENERAL_INFO(list))
 
+// TODO: Shoud not it be in debug?
+// TODO: Why this stray is placed here?                                         ---\/
 #define DUMP_LIST(list) list_dump(list, FUNC_GENERAL_INFO(list));                   \
                         list_graph_dump(list);
 
 #define POISON -1
 
+/* TODO: Name concisely, replace with functions
+
+1) Same infomation can be delivered with PUSH_LIST, POP_LIST
+
+2) Do you really need macros? Why not functions? You should be
+be very careful with macros.
+
+F.ex such code will not compile:
+
+---
+if (PUSH_IN_LIST)
+    do_smth;
+---
+
+Because of this semicolon                                           ---\/ */
 #define PUSH_IN_LIST(list, value)   list_add(list, (list)->tail, value); 
 
 #define POP_FROM_LIST(list)         list_del(list, (list)->tail);
 
 typedef int var;
 
+/* TODO: Typedef in more convenient way
+
+1)Why _t?
+
+It seems more convenient to write:
+    Elements el1;
+instead of
+    Elements_t el1;
+
+2) Why is name in plural?
+
+When creating single element, it is more natural to write:
+    Element el1;
+*/
 typedef struct Elements
 {
     var value;
@@ -41,7 +72,7 @@ typedef struct List
     int free_head;
     int free_tail;
     size_t code_of_error = 0;
-    int is_sorted = 0;
+    int is_sorted = 0; // Bool?
 }List_t;
 
 
@@ -55,6 +86,7 @@ int list_dump(List_t *list, const char* name_function, const char* name_file, co
 
 int list_detor(List_t *list);
 
+// Does user really need access to it?
 int list_resize(List_t *list, size_t new_size);      
 
 int list_del(List_t *list, int index);

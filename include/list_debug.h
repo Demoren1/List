@@ -5,6 +5,23 @@
 
 #define LIST_END_DUMP() fputs("-----------------------------------------------------------------------------------------------------------------------\n\n", LIST_LOG_FILE);
 
+/* TODO: Make macros call function-like
+
+Now if you call your macros in such case:
+
+---
+if (DEBUG_LEVEL)
+    LIST_CHECK_FUNC;
+else
+    print("List not checked");
+
+---
+
+Your programm will not compile. Still such construction seems
+seems unified and correct. To make macroses behave like functions
+they are usually wrapped in do {} while(0)
+
+*/
 #define LIST_CHECK_FUNC(func)    if(func == -1)                                                                      \
                             {                                                                                   \
                                 size_t code_of_error = LIST_ERROR_LIST_FUNC_END_WITH_ERROR;                     \
@@ -48,6 +65,7 @@
                                                     }                                                           \
                                                     else  0;
 
+// TODO: Use bit shift for it
 const long long QUANTITY_OF_ERRORS = pow(2, 16);
 
 int open_list_logs();

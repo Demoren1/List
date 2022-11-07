@@ -21,6 +21,7 @@ CFLAGS= -save-temps -Wall -Wextra -fsanitize=address -g -O0#-D _DEBUG -ggdb3 -st
 INCLUDE_PATH = -I./include/ 
 
 #sources
+# TODO: Check for $(shell find ...) for Makefiles
 LIST_SRC := $(SRC_LIST_DIR)list.cpp $(SRC_LIST_DIR)list_func.cpp $(SRC_LIST_DIR)list_dump.cpp 
 
 #obj
@@ -39,5 +40,10 @@ $(OBJ_DIR)%.o : $(SRC_LIST_DIR)%.cpp
 mkdir :
 	@mkdir $(OBJ_DIR) -p
 
+# TODO: Call clean before commiting to git
+# 1) Machine code in .o files is system-dependent so it would
+#  	 would be useless for persons with other systems (unlike sources)
+# 2) It wastefully increases size of repo. +Remember if you
+#    you delete these binaries in next commit they will stay in git's history
 clean:
 	rm $(OBJ_DIR)*.o $(OBJ_DIR)*.ii $(OBJ_DIR)*.s *.save list

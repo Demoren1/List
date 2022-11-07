@@ -10,6 +10,7 @@ static int list_swap_prev(List_t *list, size_t index1, size_t index2);
 
 static int find_head_and_tail(List_t *list);
 
+// TODO: free_push?
 static int list_add_to_free(List_t *list, int start, int finish);  
 
 static size_t list_check(List_t *list);          
@@ -28,7 +29,7 @@ int list_ctor(List_t *list, size_t capacity, const char* name_function, const ch
     list->free_head = POISON;
     list->free_tail = POISON;
     list->capacity = capacity;
-    list->elements = (Elements_t*) calloc(capacity, sizeof(Elements_t));
+    list->elements = (Elements_t*) calloc(capacity, sizeof(Elements_t)); // TODO: Return value check
 
     list->elements[0].value = 0;
     list->elements[0].prev  = 0;
@@ -52,6 +53,7 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
 
 [[nodiscard]]int list_add(List_t *list, size_t index, var value)
 {   
+    // TODO: Verifier that at least checks correct connections
     CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);
     CHECK_ON_ERROR(list->elements[index].next == POISON, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
     
@@ -59,17 +61,18 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
     {
         list_resize(list, list->capacity * 2);
     }
-        
+
     int tmp_next = free_pop(list);
     int tmp_prev = list->elements[index].next;
     
     list->elements[tmp_next].value = value;
 
     list_swap_next(list, index, tmp_next);
+    // TODO: Confusing names: tmp_next becomes prev for tmp_prev
     list_swap_prev(list, tmp_next, tmp_prev);
 
     list->size++;
-    find_head_and_tail(list);
+    find_head_and_tail(list); // TODO: Do you need to update them every time?
     return tmp_next;
 }
 
@@ -100,10 +103,12 @@ static int find_head_and_tail(List_t *list)
     return 0;
 }
 
+// TODO: Usually function names are paired like ctor-dtor
+// TODO: Fill with poison list and list structure
 int list_detor(List_t *list)
 {
     list_add_to_free(list, 0, list->capacity);
-    free(list->elements);
+    free(list->elements); // TODO: Double list_detor?
     return 0;
 }
 
@@ -121,7 +126,7 @@ int list_resize(List_t *list, size_t new_capacity)
     
     list->capacity = new_capacity;
 
-    return 0;
+    return 0; // TODO: Do you need it? Function always returns 0
 }
 
 int list_add_to_free(List_t *list, int start, int finish)
@@ -156,6 +161,18 @@ int list_del(List_t *list, int index)
     int tmp_prev = list->elements[index].prev;
     int tmp_next = list->elements[index].next;
 
+    /* TODO: Wrap in function for clarity
+
+    May be instead of list_swap_next() and ..._prev() create
+    create function that connects to elements? Like:
+
+    ---
+    bind_elements(tmp_prev, tmp_next);
+    ---
+
+    And in case of list_add it also would become more clear
+
+    */
     list->elements[list->elements[index].prev].next = tmp_next;
     list->elements[list->elements[index].next].prev = tmp_prev;
    

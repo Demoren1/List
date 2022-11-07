@@ -9,7 +9,7 @@ static FILE *graph_log_for_browser = 0;
 
 static int num_of_pic = 0;
 
-
+// TODO: Why here second newline?
 int open_list_logs()
 {
     list_logs = fopen("log_list_file.txt", "w");
@@ -35,14 +35,16 @@ int open_list_logs()
 
 int close_list_logs()
 {
-    fclose(list_logs);
+    fclose(list_logs); // TODO: Error with double close
     fclose(graph_log_for_browser);
     return 0;
 }
 
+// TODO: Your code should fit +-70 columns. Break long lines with newline.
 int list_dump(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
 {   
-    
+    // TODO: Frequently called fprintf. Good reason for creating function.
+    // TODO: Long line
     fprintf(list_logs, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
     fprintf(graph_log_for_browser, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
 
@@ -112,7 +114,7 @@ int list_dump(List_t *list, const char* name_file, const char* name_function, co
     }
 
                     
-    
+// TODO: Extra newlines?
 
     fprintf(list_logs, "\nHow we see:\t");
     
@@ -182,6 +184,23 @@ size_t list_check(List_t *list)
 
 int list_graph_dump(List_t *list)
 {
+    /* TODO: Synchronise it with open_list_logs
+
+    You use same hardcoded string constant in 2 functions. Hardcode
+    hardcode can cause issues like opening "graph_log.html", but
+    but writing to "grap_log.html"
+
+    */
+    /* TODO: Write whole buffer, not line by line
+
+    Now fputs function will be called 5 times in a row. For every
+    function call compiller generates extra code and processor will
+    will execute extra instructions.
+
+    */
+
+    // TODO: Different colors for free and used elements: in
+    //       in your pictures it's really hard to distinguish them
     FILE *graph_log = fopen("graph_log.html", "w");
     fputs("digraph lala{\n", graph_log);
     fputs("rankdir = LR;\n", graph_log);
@@ -231,7 +250,7 @@ int list_graph_dump(List_t *list)
     }
     fputs(";\n", graph_log);
 
-
+    // TODO: Extra newlines
 
     fputs("edge [weight = \"1\", color = \"#3f0063\", splines = ortho];\n", graph_log);
     for (int jumper = list->head; ; jumper = list->elements[jumper].next)
@@ -271,6 +290,7 @@ int list_graph_dump(List_t *list)
     fprintf(graph_log_for_browser, "<img src = graph_dumps/dump_%d.jpeg>\n", num_of_pic);
 
     fclose(graph_log);
+    // TODO: Why not 5 ot 17? Magic number
     char command[128] = {};   
     sprintf(command, "dot -Tjpeg graph_log.html > graph_dumps/dump_%d.jpeg", num_of_pic++);
     

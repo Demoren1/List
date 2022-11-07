@@ -29,6 +29,7 @@
                                         {                                                                       \
                                             error_decoder(code);                                                \
                                             list_dump(list, FUNC_GENERAL_INFO());                               \
+                                            return -1;                                                          \
                                         }
 
 

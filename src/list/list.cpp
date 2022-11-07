@@ -10,25 +10,28 @@ int main()
     LIST_CTOR(list, 10);
     
     // printf("in main free head = %d, free tail = %d\n", list.free_head, list.free_tail);
-    
+    printf("is sorted = %d\n", list.is_sorted);
     DUMP_LIST(&list);
 
     for (int i = 1; i < 6; i ++)
     {
         PUSH_IN_LIST(&list, i*10);
     }
+    printf("is sorted = %d\n", list.is_sorted);
     
-    list_add(&list, 3, 25);
-    list_add(&list, 3, 25);
-    list_add(&list, 3, 25);
+    // list_add(&list, 8, 25);
+    // list_add(&list, 3, 25);
+    // printf("is sorted = %d\n", list.is_sorted);
 
-    DUMP_LIST(&list); 
+    // list_add(&list, 3, 25);
+
+    // DUMP_LIST(&list); 
 
 
-    list_add(&list, 3, 25);
-    list_add(&list, 3, 25);
-    list_add(&list, 3, 25);
-    list_add(&list, 3, 25);
+//    list_add(&list, 3, 25);
+    // list_add(&list, 3, 25);
+    // list_add(&list, 3, 25);
+    // list_add(&list, 3, 25);
 
 
 
@@ -40,13 +43,13 @@ int main()
 
     // DUMP_LIST(&list); 
 
-    // list_sort(&list);
+    list_sort(&list);
 
     // DUMP_LIST(&list); 
 
-    int tmp = list_find(&list, 4);
-    printf("tmp = %d\n", tmp);
-    DUMP_LIST(&list);
+    // int tmp = list_find(&list, 4);
+    // printf("tmp = %d\n", tmp);
+    // DUMP_LIST(&list);
 
     // list_add(&list, 1, 1488);
     // DUMP_LIST(&list);

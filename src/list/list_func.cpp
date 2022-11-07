@@ -25,6 +25,7 @@ int list_ctor(List_t *list, size_t capacity, const char* name_function, const ch
     list->head = 0;
     list->tail = 0;
     list->size = 1;
+    list->is_sorted = 1;
     list->free_head = POISON;
     list->free_tail = POISON;
     list->capacity = capacity;
@@ -52,14 +53,17 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
 
 [[nodiscard]]int list_add(List_t *list, size_t index, var value)
 {   
+    CHECK_ON_ERROR(list->elements[index].prev == POISON, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
     CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);
-    CHECK_ON_ERROR(list->elements[index].next == POISON, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
     
     if (list->size + 1 == list->capacity)
     {
         list_resize(list, list->capacity * 2);
     }
-        
+    
+    if (index != list->tail)
+        list->is_sorted = 0;
+
     int tmp_next = free_pop(list);
     int tmp_prev = list->elements[index].next;
     
@@ -153,6 +157,9 @@ int list_del(List_t *list, int index)
 {   
     CHECK_ON_ERROR(list->elements[index].next == POISON, LIST_ERROR_DEL_FROM_POISON_INDEX);
 
+    if (index != list->head)
+        list->is_sorted = 0;
+
     int tmp_prev = list->elements[index].prev;
     int tmp_next = list->elements[index].next;
 
@@ -179,8 +186,6 @@ int list_del(List_t *list, int index)
             break;
         }
     }
-
-    printf("counter = %d\n", counter);
 
     int jumper = counter;
     int jump_counter = 1;
@@ -227,6 +232,7 @@ int list_sort(List_t *list)
 
     free_update(list);
     find_head_and_tail(list);
+    list->is_sorted = 1;
 
     list->elements[list->tail].next = 0;
 

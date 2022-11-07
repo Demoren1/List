@@ -4,7 +4,7 @@
 #include <list_debug.h>
 #include <list_func.h>
 
-static FILE *list_logs = 0;
+static FILE *LIST_LOG_FILE = 0;
 static FILE *graph_log_for_browser = 0;
 
 static int num_of_pic = 0;
@@ -12,9 +12,9 @@ static int num_of_pic = 0;
 
 int open_list_logs()
 {
-    list_logs = fopen("log_list_file.txt", "w");
+    LIST_LOG_FILE = fopen("log_list_file.txt", "w");
 
-    if (list_logs == NULL)
+    if (LIST_LOG_FILE == NULL)
     {
         printf("Cant open logs");
         return -1;
@@ -35,7 +35,7 @@ int open_list_logs()
 
 int close_list_logs()
 {
-    fclose(list_logs);
+    fclose(LIST_LOG_FILE);
     fclose(graph_log_for_browser);
     return 0;
 }
@@ -43,91 +43,91 @@ int close_list_logs()
 int list_dump(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
 {   
     
-    fprintf(list_logs, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
+    fprintf(LIST_LOG_FILE, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
     fprintf(graph_log_for_browser, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
 
     
-    fprintf(list_logs,  "size     = %zd\n"\
+    fprintf(LIST_LOG_FILE,  "size     = %zd\n"\
                         "capacity = %zd\n", list->size, list->capacity);            //todo use defines
                     
     fprintf(graph_log_for_browser,  "size     = %zd\n"\
                         "capacity = %zd\n", list->size, list->capacity);
                     
                         
-    fprintf(list_logs, "            ");
+    fprintf(LIST_LOG_FILE, "            ");
     for(int i = 0; i < list->capacity; i++)
     {   
         if (list->head == i)
         {
-            fprintf(list_logs, "H_______");
+            fprintf(LIST_LOG_FILE, "H_______");
         }
 
         else if (list->tail == i)
         {
-            fprintf(list_logs, "T_______");
+            fprintf(LIST_LOG_FILE, "T_______");
         }
 
         else
         {
-            fprintf(list_logs, "________");
+            fprintf(LIST_LOG_FILE, "________");
         }
     }
 
                     
     
-    fprintf(list_logs, "\nINDEXES: ");
+    fprintf(LIST_LOG_FILE, "\nINDEXES: ");
     for(int i = 0; i < list->capacity; i++)
     {
-        fprintf(list_logs, "|%3d|   ", i);
+        fprintf(LIST_LOG_FILE, "|%3d|   ", i);
     }
                     
 
-    fprintf(list_logs, "\n\nVALUE:   ");
+    fprintf(LIST_LOG_FILE, "\n\nVALUE:   ");
     for(int i = 0; i < list->capacity; i++)
     {
-        fprintf(list_logs, "|%3d|   ", list->elements[i].value);
+        fprintf(LIST_LOG_FILE, "|%3d|   ", list->elements[i].value);
     }
                     
 
-    fprintf(list_logs, "\n\nNEXT:    ");
+    fprintf(LIST_LOG_FILE, "\n\nNEXT:    ");
     for(int i = 0; i < list->capacity; i++)
     {
-        fprintf(list_logs, "|%3d|   ", list->elements[i].next);
-    }
-
-                    
-    
-
-    fprintf(list_logs, "\n\nPREV:    ");
-    for(int i = 0; i < list->capacity; i++)
-    {
-        fprintf(list_logs, "|%3d|   ", list->elements[i].prev);
-    }
-                    
-    
-    fprintf(list_logs, "\n");
-    for(int i = 0; i < list->capacity; i++)
-    {
-        fprintf(list_logs, "_________");
+        fprintf(LIST_LOG_FILE, "|%3d|   ", list->elements[i].next);
     }
 
                     
     
 
-    fprintf(list_logs, "\nHow we see:\t");
+    fprintf(LIST_LOG_FILE, "\n\nPREV:    ");
+    for(int i = 0; i < list->capacity; i++)
+    {
+        fprintf(LIST_LOG_FILE, "|%3d|   ", list->elements[i].prev);
+    }
+                    
+    
+    fprintf(LIST_LOG_FILE, "\n");
+    for(int i = 0; i < list->capacity; i++)
+    {
+        fprintf(LIST_LOG_FILE, "_________");
+    }
+
+                    
+    
+
+    fprintf(LIST_LOG_FILE, "\nHow we see:\t");
     
     int i = list->head;
     while (list->elements[i].next > 0)
     {
-        fprintf(list_logs, "%d\t", list->elements[i].value);
+        fprintf(LIST_LOG_FILE, "%d\t", list->elements[i].value);
         i = list->elements[i].next;
         
     }
-    fprintf(list_logs, "%d", list->elements[i].value);
+    fprintf(LIST_LOG_FILE, "%d", list->elements[i].value);
 
-    fprintf(list_logs, "\n\n\n");
+    fprintf(LIST_LOG_FILE, "\n\n\n");
 
-    fflush(list_logs);
+    fflush(LIST_LOG_FILE);
     
     return 0;
 }

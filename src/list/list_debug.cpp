@@ -164,20 +164,12 @@ int error_decoder(int code)
 
     return code;
 }
-//Черепаха заяц алгоритм
+
 int list_check(List_t *list)
 {   
     CHECK_ON_ERROR(list == NULL, LIST_ERROR_LIST_BROKEN);
 
-    int jumper = list->head;
-    int test_size = 0;
-
-    while((test_size++ < list->capacity) && (jumper != 0))
-    {
-        jumper = list->elements[jumper].next;
-    }
-
-    CHECK_ON_ERROR(jumper != 0, LIST_ERROR_LIST_BROKEN);
+    turtle_hare_check(list);
 
     return 0;
 }
@@ -191,9 +183,15 @@ int turtle_hare_check(List_t *list)
 
     while (turtle != hare)
     {
-        // turt;
+        turtle = list->elements[turtle].next;
+
+        hare = list->elements[hare].next;
+        hare = list->elements[hare].next;
     }
+
+    CHECK_ON_ERROR(turtle != start, LIST_ERROR_INNER_CYCLE);
     
+    printf("turtle = %d, hare = %d, head = %d\n", turtle, hare, list->head);
     return 0;
 }
 
@@ -291,17 +289,5 @@ int list_graph_dump(List_t *list)
     system(command);
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 

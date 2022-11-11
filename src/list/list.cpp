@@ -7,7 +7,7 @@ int main()
     LIST_CHECK_FUNC(open_list_logs());
 
     List_t list = {};
-    LIST_CTOR(list, 10);
+    list_ctor(list, 10);
     
     // printf("in main free head = %d, free tail = %d\n", list.free_head, list.free_tail);
     // printf("is sorted = %d\n", list.is_sorted);
@@ -19,19 +19,19 @@ int main()
     }
     // printf("is sorted = %d\n", list.is_sorted);
     
-    // list_add(&list, 8, 25);
-    list_add(&list, 3, 25);
+    // list_insert(&list, 8, 25);
+    list_insert(&list, 3, 25, AFTER);
     // printf("is sorted = %d\n", list.is_sorted);
 
-    // list_add(&list, 3, 25);
+    // list_insert(&list, 3, 25);
 
     DUMP_LIST(&list); 
 
 
-//    list_add(&list, 3, 25);
-    // list_add(&list, 3, 25);
-    // list_add(&list, 3, 25);
-    // list_add(&list, 3, 25);
+//    list_insert(&list, 3, 25);
+    // list_insert(&list, 3, 25);
+    // list_insert(&list, 3, 25);
+    // list_insert(&list, 3, 25);
 
 
 
@@ -39,7 +39,7 @@ int main()
 
     // list_pop(&list);
 
-    // list_del(&list, 7);
+    // list_erase(&list, 7);
 
     // DUMP_LIST(&list); 
 
@@ -51,10 +51,10 @@ int main()
     // printf("tmp = %d\n", tmp);
     // DUMP_LIST(&list);
 
-    // list_add(&list, 1, 1488);
+    // list_insert(&list, 1, 1488);
     // DUMP_LIST(&list);
-    // list_del(&list, 3);
-    // list_del(&list, 7);
+    // list_erase(&list, 3);
+    // list_erase(&list, 7);
     // DUMP_LIST(&list);  
 
     list_dtor(&list);

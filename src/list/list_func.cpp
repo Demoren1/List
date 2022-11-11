@@ -18,8 +18,11 @@ static int free_update(List_t *list);
 
 static int bind_nodes(List_t *list, int index);
 
-int list_ctor(List_t *list, size_t capacity, const char* name_function, const char* name_file, const char* name_variable, int num_line)
+static int list_resize(List_t *list, size_t new_capacity);
+
+int _list_ctor(List_t *list, size_t capacity, const char* name_function, const char* name_file, const char* name_variable, int num_line)
 {   
+    SOFT_ASS(list == NULL);
     CHECK_ON_ERROR(capacity <= 0, LIST_ERROR_CAPACITY_TOO_FEW);
 
     list->head = 0;
@@ -44,17 +47,20 @@ int list_ctor(List_t *list, size_t capacity, const char* name_function, const ch
 
 int list_dump_info_ctor(List *list, const char* name_function, const char* name_file, const char* name_variable, int num_line)
 {   
+    SOFT_ASS(list == NULL);
 
     list->dump_info.name_of_func     = name_function;
     list->dump_info.name_of_file     = name_file;   
     list->dump_info.name_of_variable = name_variable + 1;
-    list->dump_info.num_of_str       = num_line;
+    list->dump_info.num_of_line      = num_line;
 
     return 0;
 }
 
-[[nodiscard]]int list_add(List_t *list, size_t index, var value)
+int list_insert(List_t *list, size_t index, var value, Positions pos)
 {   
+    SOFT_ASS(list == NULL);
+    SOFT_ASS(index < 0);
     CHECK_ON_ERROR(list->elements[index].prev == POISON, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
     CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);
     list_check(list);
@@ -67,12 +73,21 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
     if (index != list->tail)
         list->is_sorted = 0;
 
+    if ((index > 0) && (pos == BEFORE))
+    {
+        index--;
+    }
+    else if ((index <= 0) && (pos == BEFORE))
+    {
+        CHECK_ON_ERROR(1, LIST_ERROR_ADD_BEFORE_ZERO_INDEX);
+    }
+
     int tmp_next = free_pop(list);
     int tmp_prev = list->elements[index].next;
     
     list->elements[tmp_next].value = value;
 
-    list_swap_next(list, index, tmp_next);              //todo add connect func
+    list_swap_next(list, index, tmp_next);              
     list_swap_prev(list, tmp_next, tmp_prev);
 
     list->size++;
@@ -82,13 +97,14 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
 
 int list_push(List_t *list, var value)
 {
-    return list_add(list, list->tail, value);
+    return list_insert(list, list->tail, value, AFTER);
 }
 
 static int list_swap_next(List_t *list, size_t index1, size_t index2)
 {
-    list->elements[index2].next = list->elements[index1].next;
+    SOFT_ASS(list == NULL);
 
+    list->elements[index2].next = list->elements[index1].next;
     list->elements[index1].next = index2;
 
     return 0;
@@ -96,8 +112,9 @@ static int list_swap_next(List_t *list, size_t index1, size_t index2)
 
 static int list_swap_prev(List_t *list, size_t index1, size_t index2)
 {   
+    SOFT_ASS(list == NULL);
+
     list->elements[index1].prev = list->elements[index2].prev;
-    
     list->elements[index2].prev = index1;
     
     return 0;
@@ -105,8 +122,9 @@ static int list_swap_prev(List_t *list, size_t index1, size_t index2)
 
 static int find_head_and_tail(List_t *list)
 {
-    list->head = list->elements[0].next;
+    SOFT_ASS(list == NULL);
 
+    list->head = list->elements[0].next;
     list->tail = list->elements[0].prev;
     
     return 0;
@@ -114,6 +132,8 @@ static int find_head_and_tail(List_t *list)
 
 int list_dtor(List_t *list)
 {
+    SOFT_ASS(list == NULL);
+
     free_push(list, 0, list->capacity);
     if (list->elements != NULL)
     {
@@ -125,6 +145,8 @@ int list_dtor(List_t *list)
 
 int list_resize(List_t *list, size_t new_capacity)
 {   
+    SOFT_ASS(list == NULL);
+
     list_check(list);
     CHECK_ON_ERROR(list->capacity > MAX_CAPACITY, LIST_ERROR_CAPACITY_TOO_BIG);
     
@@ -143,6 +165,8 @@ int list_resize(List_t *list, size_t new_capacity)
 
 int free_push(List_t *list, int start, int finish)
 {   
+    SOFT_ASS(list == NULL);
+
     list_check(list);
 
     if (POISON == list->free_head)
@@ -168,8 +192,9 @@ int free_push(List_t *list, int start, int finish)
     return 0;
 }
 
-var list_del(List_t *list, int index)
+var list_erase(List_t *list, int index)
 {   
+    SOFT_ASS(list == NULL);
     CHECK_ON_ERROR(list->elements[index].next == POISON, LIST_ERROR_DEL_FROM_POISON_INDEX);
     CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);  
     list_check(list);
@@ -190,6 +215,8 @@ var list_del(List_t *list, int index)
 
 int bind_nodes(List_t *list, int index)
 {
+    SOFT_ASS(list == NULL);
+
     int tmp_prev = list->elements[index].prev;
     int tmp_next = list->elements[index].next;
 
@@ -201,11 +228,15 @@ int bind_nodes(List_t *list, int index)
 
 var list_pop(List_t *list)
 {
-    return list_del(list, (list)->tail);
+    SOFT_ASS(list == NULL);
+    return list_erase(list, (list)->tail);
 }
 
 [[nodiscard]]int list_find(List *list, int logical_index)
 {
+    SOFT_ASS(list == NULL);
+    SOFT_ASS(logical_index < 0);
+
     list_check(list);
     CHECK_ON_ERROR(logical_index >= list->capacity, LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY);
 
@@ -237,6 +268,7 @@ var list_pop(List_t *list)
 
 int list_sort(List_t *list)
 {
+    SOFT_ASS(list == NULL);
     list_check(list);
     Element_t *sorted_elements = (Element_t*)calloc(list->capacity, sizeof(Element_t));  
     CHECK_ON_ERROR(sorted_elements == NULL, LIST_ERROR_CANT_CALLOC_FOR_SORT);
@@ -273,8 +305,9 @@ int list_sort(List_t *list)
 
 int free_pop(List_t *list)
 {
-    int tmp = list->free_head;
+    SOFT_ASS(list == NULL);
 
+    int tmp = list->free_head;
     list->free_head = list->elements[tmp].next;
 
     return tmp;
@@ -282,6 +315,8 @@ int free_pop(List_t *list)
 
 int free_update(List_t *list)
 {
+    SOFT_ASS(list == NULL);
+
     list->free_head = POISON;
     list->free_tail = POISON;
 

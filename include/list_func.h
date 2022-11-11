@@ -3,7 +3,6 @@
 
 #include <stdio.h>
 #include <stdbool.h>
-#include <list_debug.h>
 
 #define FUNC_GENERAL_INFO(object)  __FILE__, __FUNCTION__, #object, __LINE__
 
@@ -31,6 +30,34 @@ struct Dump_list_info
     int num_of_line;             
 };
 
+
+typedef enum Postions_t
+{
+    BEFORE = 0,
+    AFTER  = 1
+} Positions;
+
+typedef enum List_errors_t
+{
+    NO_ERROR                                    = 0,
+    LIST_ERROR_LIST_FUNC_END_WITH_ERROR         = 1 << 0,
+    LIST_ERROR_ADD_AFTER_POISONED_INDEX         = 1 << 1,
+    LIST_ERROR_CAPACITY_TOO_BIG                 = 1 << 2,
+    LIST_ERROR_DEL_FROM_POISON_INDEX            = 1 << 3,
+    LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY     = 1 << 4,
+    LIST_ERROR_PTR_ON_LIST_NULL                 = 1 << 5,
+    LIST_ERROR_JUMP_ON_POISON                   = 1 << 6,
+    LIST_ERROR_WRONG_REALLOC_IN_RESIZE          = 1 << 7,
+    LIST_ERROR_CANT_REALLOC                     = 1 << 8,
+    LIST_ERROR_CANT_CALLOC_FOR_SORT             = 1 << 9,
+    LIST_ERROR_PREV_NOT_EQ_NEXT                 = 1 << 10,
+    LIST_ERROR_CAPACITY_TOO_FEW                 = 1 << 11,
+    LIST_ERROR_CANT_CALLOC                      = 1 << 12,
+    LIST_ERROR_LIST_BROKEN                      = 1 << 13,
+    LIST_ERROR_ADD_BEFORE_ZERO_INDEX            = 1 << 14,
+    LIST_ERROR_INNER_CYCLE                      = 1 << 15,
+} List_errors;
+
 typedef struct List
 {
     int head;
@@ -50,13 +77,6 @@ typedef struct List
 
     bool is_sorted = 0;
 }List_t;
-
-typedef enum Postions_t
-{
-    BEFORE = 0,
-    AFTER  = 1
-} Positions;
-
 int _list_ctor(List_t *list, size_t capacity, const char* name_function, const char* name_file, const char* name_variable, int num_line);
 
 int list_insert(List_t *list, size_t index, var value, Positions pos);  

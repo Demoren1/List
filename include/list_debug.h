@@ -1,5 +1,6 @@
 #include <unistd.h>
 #include <math.h>
+// #include <list_func.h>
 
 #define MAX_CAPACITY 65536
 
@@ -23,7 +24,22 @@
 
 #define CHECK(condition, code_of_error)  (condition) ? code_of_error : 0;
 
+#define DOT .
+
 #define LIST_LOG_FILE list_logs
+
+#define GRAPH_LOG_FILE graph_log_for_browser
+
+#define GRAPH_FOR_BROWSER "graph_log.html"
+
+#define WRITE_LIST_LOG_HEADER() fprintf(LIST_LOG_FILE, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n",   \
+                                name_file, name_function, num_line, name_variable);                                                     \
+                                fprintf(GRAPH_LOG_FILE, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n",  \
+                                name_file, name_function, num_line, name_variable);                                                     \
+                                fprintf(LIST_LOG_FILE,  "size     = %zd\n"                                                              \
+                                                    "capacity = %zd\n", list->size, list->capacity);                                    \
+                                fprintf(GRAPH_LOG_FILE,  "size     = %zd\n"                                                             \
+                                                    "capacity = %zd\n", list->size, list->capacity);                                    
 
 #define CHECK_ON_ERROR(condition, code) if(condition)                                                           \
                                         {                                                                       \
@@ -45,11 +61,11 @@
 #define LIST_PRINT_ERROR(testing_var, code_of_error) if (testing_var & code_of_error)                           \
                                                     {                                                           \
                                                         fprintf(LIST_LOG_FILE, "%s\n", #code_of_error);         \
-                                                        fprintf(graph_log_for_browser, "%s\n", #code_of_error); \
+                                                        fprintf(GRAPH_LOG_FILE, "%s\n", #code_of_error); \
                                                     }                                                           \
                                                     else  0;
 
-const long long QUANTITY_OF_ERRORS = pow(2, 16);
+const long long QUANTITY_OF_ERRORS = 1 << 16;
 
 int open_list_logs();
 
@@ -71,4 +87,6 @@ enum List_errors
     LIST_ERROR_CANT_CALLOC_FOR_SORT             = 1 << 9,
     LIST_ERROR_PREV_NOT_EQ_NEXT                 = 1 << 10,
     LIST_ERROR_CAPACITY_TOO_FEW                 = 1 << 11,
+    LIST_ERROR_CANT_CALLOC                      = 1 << 12,
+    LIST_ERROR_LIST_BROKEN                      = 1 << 13
 };

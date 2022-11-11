@@ -21,7 +21,7 @@ CFLAGS= -save-temps -Wall -Wextra -fsanitize=address -g -O0#-D _DEBUG -ggdb3 -st
 INCLUDE_PATH = -I./include/ 
 
 #sources
-LIST_SRC := $(SRC_LIST_DIR)list.cpp $(SRC_LIST_DIR)list_func.cpp $(SRC_LIST_DIR)list_dump.cpp 
+LIST_SRC  := $(wildcard $(SRC_LIST_DIR)*.cpp) 
 
 #obj
 LIST_OBJ  := $(patsubst $(SRC_LIST_DIR)%.cpp, $(OBJ_DIR)%.o, $(LIST_SRC)) 

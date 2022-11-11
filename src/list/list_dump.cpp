@@ -5,10 +5,9 @@
 #include <list_func.h>
 
 static FILE *LIST_LOG_FILE = 0;
-static FILE *graph_log_for_browser = 0;
-
+static FILE *GRAPH_LOG_FILE = 0;
+static const int LEN_OF_COMMAND = 128;
 static int num_of_pic = 0;
-
 
 int open_list_logs()
 {
@@ -20,40 +19,39 @@ int open_list_logs()
         return -1;
     }
 
-    graph_log_for_browser = fopen("graph_log.htm", "w");
+    GRAPH_LOG_FILE = fopen("graph_log.htm", "w");
 
-    if (graph_log_for_browser == NULL)
+    if (GRAPH_LOG_FILE == NULL)
     {
         printf("Cant open graph logs for browser");
         return -1;
     }
 
-    fprintf(graph_log_for_browser, "<pre>\n\n");
+    fprintf(GRAPH_LOG_FILE, "<pre>\n\n");
 
     return 0;
 }
 
 int close_list_logs()
-{
-    fclose(LIST_LOG_FILE);
-    fclose(graph_log_for_browser);
+{   
+    if (LIST_LOG_FILE != NULL)  
+    {
+        fclose(LIST_LOG_FILE);
+        LIST_LOG_FILE = NULL;
+    }
+
+    if (GRAPH_LOG_FILE != NULL)
+    {
+        fclose(GRAPH_LOG_FILE);
+        GRAPH_LOG_FILE = NULL;
+    }
     return 0;
 }
 
 int list_dump(List_t *list, const char* name_file, const char* name_function, const char* name_variable, int num_line)
 {   
-    
-    fprintf(LIST_LOG_FILE, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
-    fprintf(graph_log_for_browser, "Dump called from %s file, in %s func, in %d line, name of variable = %s\n\n", name_file, name_function, num_line, name_variable);    
+    WRITE_LIST_LOG_HEADER();
 
-    
-    fprintf(LIST_LOG_FILE,  "size     = %zd\n"\
-                        "capacity = %zd\n", list->size, list->capacity);            //todo use defines
-                    
-    fprintf(graph_log_for_browser,  "size     = %zd\n"\
-                        "capacity = %zd\n", list->size, list->capacity);
-                    
-                        
     fprintf(LIST_LOG_FILE, "            ");
     for(int i = 0; i < list->capacity; i++)
     {   
@@ -156,33 +154,35 @@ int error_decoder(int code)
 
     LIST_PRINT_ERROR(code, LIST_ERROR_CAPACITY_TOO_FEW);
 
+    LIST_PRINT_ERROR(code, LIST_ERROR_CANT_CALLOC);
+
+    LIST_PRINT_ERROR(code, LIST_ERROR_LIST_BROKEN);
+
     fflush(LIST_LOG_FILE);
 
     return code;
 }
 
-size_t list_check(List_t *list)
+int list_check(List_t *list)
 {   
-    if (LIST_LOG_FILE == 0)
+    CHECK_ON_ERROR(list != NULL, LIST_ERROR_LIST_BROKEN);
+
+    int jumper = list->head;
+    int test_size = 0;
+
+    while((test_size++ < list->capacity) && (jumper != 0))
     {
-        return -1;
-    }
-    
-    if (list == 0)
-    {   
-        fprintf(LIST_LOG_FILE, "ERROR: list destroyed");
-        return -1;
+        jumper = list->elements[jumper].next;
     }
 
-    list->code_of_error |= CHECK(list->capacity > MAX_CAPACITY, LIST_ERROR_CAPACITY_TOO_BIG);
+    CHECK_ON_ERROR(jumper != 0, LIST_ERROR_LIST_BROKEN);
 
-    return list->code_of_error;
-
-}   
+    return 0;
+}
 
 int list_graph_dump(List_t *list)
 {
-    FILE *graph_log = fopen("graph_log.html", "w");
+    FILE *graph_log = fopen(GRAPH_FOR_BROWSER, "w");
     fputs("digraph lala{\n", graph_log);
     fputs("rankdir = LR;\n", graph_log);
     fputs("bgcolor = grey;\n", graph_log);
@@ -227,7 +227,6 @@ int list_graph_dump(List_t *list)
     for (int i = 0; i < list->capacity - 1; i++)
     {
         fprintf(graph_log, "node%d -> node%d ", i, i+1);
-
     }
     fputs(";\n", graph_log);
 
@@ -267,12 +266,12 @@ int list_graph_dump(List_t *list)
 
     fputs("\n}", graph_log);
 
-    fprintf(graph_log_for_browser, "DUMP #%d \n", num_of_pic);
-    fprintf(graph_log_for_browser, "<img src = graph_dumps/dump_%d.jpeg>\n", num_of_pic);
+    fprintf(GRAPH_LOG_FILE, "DUMP #%d \n", num_of_pic);
+    fprintf(GRAPH_LOG_FILE, "<img src = graph_dumps/dump_%d.jpeg>\n", num_of_pic);
 
     fclose(graph_log);
-    char command[128] = {};   
-    sprintf(command, "dot -Tjpeg graph_log.html > graph_dumps/dump_%d.jpeg", num_of_pic++);
+    char command[LEN_OF_COMMAND] = {};   
+    sprintf(command, "dot -Tjpeg %s > graph_dumps/dump_%d.jpeg", GRAPH_FOR_BROWSER, num_of_pic++);
     
     system(command);
     return 0;

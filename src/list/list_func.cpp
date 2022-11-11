@@ -1,8 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <list_func.h>
 #include <list_debug.h>
 #include <assert.h>
-#include <list_func.h>
 
 static int list_swap_next(List_t *list, size_t index1, size_t index2); 
 
@@ -10,13 +10,13 @@ static int list_swap_prev(List_t *list, size_t index1, size_t index2);
 
 static int find_head_and_tail(List_t *list);
 
-static int list_add_to_free(List_t *list, int start, int finish);  
-
-static size_t list_check(List_t *list);          
+static int free_push(List_t *list, int start, int finish);  
 
 static int free_pop(List_t *list);
 
 static int free_update(List_t *list);
+
+static int bind_nodes(List_t *list, int index);
 
 int list_ctor(List_t *list, size_t capacity, const char* name_function, const char* name_file, const char* name_variable, int num_line)
 {   
@@ -29,13 +29,15 @@ int list_ctor(List_t *list, size_t capacity, const char* name_function, const ch
     list->free_head = POISON;
     list->free_tail = POISON;
     list->capacity = capacity;
-    list->elements = (Elements_t*) calloc(capacity, sizeof(Elements_t));
+    list->elements = (Element_t*) calloc(capacity, sizeof(Element_t));
+    
+    CHECK_ON_ERROR(list->elements == NULL, LIST_ERROR_CANT_CALLOC);
 
     list->elements[0].value = 0;
     list->elements[0].prev  = 0;
     list->elements[0].next  = 0;
 
-    list_add_to_free(list, 1, list->capacity);
+    free_push(list, 1, list->capacity);
     list_dump_info_ctor(list, name_function, name_file, name_variable, num_line);
     return 0;
 }
@@ -55,6 +57,7 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
 {   
     CHECK_ON_ERROR(list->elements[index].prev == POISON, LIST_ERROR_ADD_AFTER_POISONED_INDEX);
     CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);
+    list_check(list);
     
     if (list->size + 1 == list->capacity)
     {
@@ -69,12 +72,17 @@ int list_dump_info_ctor(List *list, const char* name_function, const char* name_
     
     list->elements[tmp_next].value = value;
 
-    list_swap_next(list, index, tmp_next);
+    list_swap_next(list, index, tmp_next);              //todo add connect func
     list_swap_prev(list, tmp_next, tmp_prev);
 
     list->size++;
     find_head_and_tail(list);
     return tmp_next;
+}
+
+int list_push(List_t *list, var value)
+{
+    return list_add(list, list->tail, value);
 }
 
 static int list_swap_next(List_t *list, size_t index1, size_t index2)
@@ -104,32 +112,39 @@ static int find_head_and_tail(List_t *list)
     return 0;
 }
 
-int list_detor(List_t *list)
+int list_dtor(List_t *list)
 {
-    list_add_to_free(list, 0, list->capacity);
-    free(list->elements);
+    free_push(list, 0, list->capacity);
+    if (list->elements != NULL)
+    {
+        free(list->elements);
+        list->elements = NULL;
+    }
     return 0;
 }
 
 int list_resize(List_t *list, size_t new_capacity)
 {   
+    list_check(list);
     CHECK_ON_ERROR(list->capacity > MAX_CAPACITY, LIST_ERROR_CAPACITY_TOO_BIG);
     
-    Elements_t *test_realloc = (Elements_t *) realloc(list->elements, new_capacity * sizeof(Elements_t));
+    Element_t *test_realloc = (Element_t *) realloc(list->elements, new_capacity * sizeof(Element_t));
     CHECK_ON_ERROR(test_realloc == NULL, LIST_ERROR_CANT_REALLOC);
 
     list->elements = test_realloc;
     CHECK_ON_ERROR(list->elements == NULL, LIST_ERROR_WRONG_REALLOC_IN_RESIZE);
 
-    list_add_to_free(list, list->capacity - 1, new_capacity);
+    free_push(list, list->capacity - 1, new_capacity);
     
     list->capacity = new_capacity;
 
     return 0;
 }
 
-int list_add_to_free(List_t *list, int start, int finish)
+int free_push(List_t *list, int start, int finish)
 {   
+    list_check(list);
+
     if (POISON == list->free_head)
     {
         list->free_head = start;
@@ -153,29 +168,45 @@ int list_add_to_free(List_t *list, int start, int finish)
     return 0;
 }
 
-int list_del(List_t *list, int index)
+var list_del(List_t *list, int index)
 {   
     CHECK_ON_ERROR(list->elements[index].next == POISON, LIST_ERROR_DEL_FROM_POISON_INDEX);
+    CHECK_ON_ERROR(index != list->elements[list->elements[index].prev].next, LIST_ERROR_PREV_NOT_EQ_NEXT);  
+    list_check(list);
 
     if (index != list->head)
         list->is_sorted = 0;
 
+    var value = list->elements[index].value;
+
+    bind_nodes(list, index);
+
+    free_push(list, index, index + 1);   
+
+    list->size--;
+    find_head_and_tail(list);
+    return value;
+}
+
+int bind_nodes(List_t *list, int index)
+{
     int tmp_prev = list->elements[index].prev;
     int tmp_next = list->elements[index].next;
 
     list->elements[list->elements[index].prev].next = tmp_next;
     list->elements[list->elements[index].next].prev = tmp_prev;
-   
-    list_add_to_free(list, index, index + 1);   
 
-    list->size--;
-    find_head_and_tail(list);
     return 0;
+}
+
+var list_pop(List_t *list)
+{
+    return list_del(list, (list)->tail);
 }
 
 [[nodiscard]]int list_find(List *list, int logical_index)
 {
-
+    list_check(list);
     CHECK_ON_ERROR(logical_index >= list->capacity, LIST_ERROR_LOGIC_INDEX_GREATER_CAPACITY);
 
     int counter = 0;
@@ -206,7 +237,8 @@ int list_del(List_t *list, int index)
 
 int list_sort(List_t *list)
 {
-    Elements_t *sorted_elements = (Elements_t*)calloc(list->capacity, sizeof(Elements_t));  
+    list_check(list);
+    Element_t *sorted_elements = (Element_t*)calloc(list->capacity, sizeof(Element_t));  
     CHECK_ON_ERROR(sorted_elements == NULL, LIST_ERROR_CANT_CALLOC_FOR_SORT);
     
     list->is_sorted = 1;
@@ -253,7 +285,7 @@ int free_update(List_t *list)
     list->free_head = POISON;
     list->free_tail = POISON;
 
-    list_add_to_free(list, list->size, list->capacity);
+    free_push(list, list->size, list->capacity);
 
     return 1;
 }

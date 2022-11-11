@@ -15,7 +15,7 @@ int main()
 
     for (int i = 1; i < 6; i ++)
     {
-        PUSH_IN_LIST(&list, i*10);
+        list_push(&list, i*10);
     }
     // printf("is sorted = %d\n", list.is_sorted);
     
@@ -37,7 +37,7 @@ int main()
 
     // DUMP_LIST(&list); 
 
-    // POP_FROM_LIST(&list);
+    // list_pop(&list);
 
     // list_del(&list, 7);
 
@@ -57,7 +57,7 @@ int main()
     // list_del(&list, 7);
     // DUMP_LIST(&list);  
 
-    list_detor(&list);
+    list_dtor(&list);
     LIST_CHECK_FUNC(close_list_logs());
     return 0;
 }

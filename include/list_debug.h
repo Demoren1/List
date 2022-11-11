@@ -1,3 +1,5 @@
+#ifndef HEADER_GUARD
+#define HEADER_GUARD
 #include <unistd.h>
 #include <math.h>
 // #include <list_func.h>
@@ -22,6 +24,12 @@
 
 #define DBG printf("%s:%d -- %s\n", __FILE__, __LINE__, __FUNCTION__);
 
+#define SOFT_ASS(condition) if (condition)                                                                                   \
+                            {                                                                                               \
+                                printf("something go wrong at %s file, %s func, %s obj, %d line\n", FUNC_GENERAL_INFO());   \
+                                return -1;                                                                                  \
+                            }   
+
 #define CHECK(condition, code_of_error)  (condition) ? code_of_error : 0;
 
 #define DOT .
@@ -45,27 +53,17 @@
                                         {                                                                       \
                                             error_decoder(code);                                                \
                                             list_dump(list, FUNC_GENERAL_INFO());                               \
-                                            return -1;                                                          \
+                                            return code;                                                         \
                                         }
-
-
-#define LIST_ASSERT_OK(stk)      if (list_check(list) != 0)                                                      \
-                            {                                                                               \
-                                list_err_decoder(stk->code_of_error);                                      \
-                                list_dump(list, FUNC_GENERAL_INFO(), list_check(list));                      \
-                                return -1;                                                                   \
-                            }                                                           
-
-#define CHECK(condition, code_of_error)  (condition) ? code_of_error : 0;
 
 #define LIST_PRINT_ERROR(testing_var, code_of_error) if (testing_var & code_of_error)                           \
                                                     {                                                           \
                                                         fprintf(LIST_LOG_FILE, "%s\n", #code_of_error);         \
                                                         fprintf(GRAPH_LOG_FILE, "%s\n", #code_of_error); \
-                                                    }                                                           \
-                                                    else  0;
+                                                    }                                                           
+                                                
 
-const long long QUANTITY_OF_ERRORS = 1 << 16;
+const long long QUANTITY_OF_ERRORS = 1 << 20;
 
 int open_list_logs();
 
@@ -73,8 +71,9 @@ int close_list_logs();
 
 int error_decoder(int code);
 
-enum List_errors
+typedef enum List_errors_t
 {
+    NO_ERROR                                    = 0,
     LIST_ERROR_LIST_FUNC_END_WITH_ERROR         = 1 << 0,
     LIST_ERROR_ADD_AFTER_POISONED_INDEX         = 1 << 1,
     LIST_ERROR_CAPACITY_TOO_BIG                 = 1 << 2,
@@ -88,5 +87,8 @@ enum List_errors
     LIST_ERROR_PREV_NOT_EQ_NEXT                 = 1 << 10,
     LIST_ERROR_CAPACITY_TOO_FEW                 = 1 << 11,
     LIST_ERROR_CANT_CALLOC                      = 1 << 12,
-    LIST_ERROR_LIST_BROKEN                      = 1 << 13
-};
+    LIST_ERROR_LIST_BROKEN                      = 1 << 13,
+    LIST_ERROR_ADD_BEFORE_ZERO_INDEX            = 1 << 14
+} List_errors;
+
+#endif
